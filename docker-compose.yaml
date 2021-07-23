@@ -1,0 +1,22 @@
+version: '3'
+
+services:
+  db:
+    image: mysql:5.7
+    command: --innodb-use-native-aio=0
+    container_name: golang-mysql
+    restart: unless-stopped
+    tty: true
+    environment:
+      - MYSQL_DATABASE=golang_jwt
+      - MYSQL_ROOT_PASSWORD=golang_jwt
+    volumes:
+      - ./.docker/mysql:/var/lib/mysql
+    ports: 
+      - "3306:3306"
+    networks:
+      - golang-network
+
+networks:
+  golang-network:
+    driver: bridge
