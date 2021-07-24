@@ -2,7 +2,17 @@ POST http://localhost:8000/api/register
 Content-Type: application/json
 
 {
-  "name": "Camila PinhãoSpakauskas",
-  "password": "senha da Camila",
-  "email": "kkpinho@email.org"
+  "name": "Renato Spakauskas",
+  "password": "meu segredoa",
+  "email": "renato@email.org"
+}
+
+###
+POST http://localhost:8000/api/register
+Content-Type: application/json
+
+{
+  "name": "Camila Spakauskas",
+  "password": "senha da camila",
+  "email": "kkps@home.com"
 }
