@@ -1,9 +1,11 @@
 package database
 
 import (
-	"fmt"
+	"log"
 	"os"
 	"strings"
+
+	models "github.com/renatospaka/go-jwt/models/user"
 
 	"github.com/joho/godotenv"
 	"gorm.io/driver/mysql"
@@ -12,8 +14,7 @@ import (
 
 var (
 	DB       *gorm.DB
-	err      error
-	DSN      string
+	dsn      string
 	user     string
 	pwd      string
 	database string
@@ -24,13 +25,17 @@ func init() {
 	user = strings.Trim(os.Getenv("MYSQL_USR"), " ")
 	pwd = strings.Trim(os.Getenv("MYSQL_PWD"), " ")
 	database = strings.Trim(os.Getenv("MYSQL_DATABASE"), " ")
-	DSN = user + ":" + pwd + "@tcp(127.0.0.1:3306)/" + database + "?charset=utf8mb4&parseTime=True&loc=Local"
+	dsn = user + ":" + pwd + "@tcp(127.0.0.1:3306)/" + database + "?charset=utf8mb4&parseTime=True&loc=Local"
 }
 
 func Connect() {
-	_, err := gorm.Open(mysql.Open(DSN), &gorm.Config{})
+	DB, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
-		fmt.Println(err.Error())
-		fmt.Println("Cannot connect to Database")
+		log.Println(err.Error())
+		log.Println("Cannot connect to Database")
 	}
+
+	log.Printf("Database Connected: %d", DB.Error)
+
+	DB.AutoMigrate(&models.User{})
 }
