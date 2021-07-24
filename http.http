@@ -3,8 +3,8 @@ Content-Type: application/json
 
 {
   "name": "Renato Spakauskas",
-  "password": "meu segredoa",
-  "email": "renato@email.org"
+  "password": "2senha1",
+  "email": "renato@home.org"
 }
 
 ###
@@ -13,6 +13,15 @@ Content-Type: application/json
 
 {
   "name": "Camila Spakauskas",
-  "password": "senha da camila",
+  "password": "2Senha",
   "email": "kkps@home.com"
+}
+
+###
+POST http://localhost:8000/api/login
+Content-Type: application/json
+
+{
+  "password": "2senha1",
+  "email": "renato@home.org"
 }
