@@ -13,11 +13,11 @@ import (
 )
 
 var (
-	DB       *gorm.DB
 	dsn      string
 	user     string
 	pwd      string
 	database string
+	DB       *gorm.DB
 )
 
 func init() {
@@ -28,14 +28,14 @@ func init() {
 	dsn = user + ":" + pwd + "@tcp(127.0.0.1:3306)/" + database + "?charset=utf8mb4&parseTime=True&loc=Local"
 }
 
-func Connect() {
-	DB, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+func Connect() *gorm.DB {
+	connection, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Println(err.Error())
 		log.Println("Cannot connect to Database")
+		return nil
 	}
 
-	log.Printf("Database Connected: %d", DB.Error)
-
-	DB.AutoMigrate(&models.User{})
+	connection.AutoMigrate(&models.User{})
+	return connection
 }

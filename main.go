@@ -4,12 +4,12 @@ import (
 	"log"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/renatospaka/go-jwt/database"
+	//"github.com/renatospaka/go-jwt/database"
 	"github.com/renatospaka/go-jwt/routes"
 )
 
 func main() {
-	database.Connect()
+	//database.Connect()
 	app := fiber.New()
 	route.Setup(app)
 

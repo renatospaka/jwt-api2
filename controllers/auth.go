@@ -21,8 +21,8 @@ func Register(c *fiber.Ctx) error {
 		Password: password,
 	}
 
-	database.Connect()
-	database.DB.Create(&user)
+	DB := database.Connect()
+	DB.Create(&user)
 
 	return c.JSON(user)
 }
