@@ -14,11 +14,18 @@ import (
 
 const SecretKey = "secret"
 
+// func init() {
+// 	SecretKey = []byte("secret")
+// }
+
 func Register(c *fiber.Ctx) error {
 	var data map[string]string
 
 	if err := c.BodyParser(&data); err != nil {
-		return err
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{
+			"message": err.Error(),
+		})
 	}
 
 	password, _ := bcrypt.GenerateFromPassword([]byte(data["password"]), 14)
@@ -37,7 +44,10 @@ func Login(c *fiber.Ctx) error {
 	var data map[string]string
 
 	if err := c.BodyParser(&data); err != nil {
-		return err
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{
+			"message": err.Error(),
+		})
 	}
 
 	user := models.User{}
@@ -46,7 +56,6 @@ func Login(c *fiber.Ctx) error {
 	if user.ID == 0 {
 		c.Status(fiber.StatusNotFound)
 		return c.JSON(fiber.Map{
-			//"message": "user not found",
 			"message": "incorrect user or password",
 		})
 	}
@@ -57,17 +66,16 @@ func Login(c *fiber.Ctx) error {
 			"message": "incorrect user or password",
 		})
 	}
-	//issuer := strconv.Itoa(int(user.ID))
-	issuer := strconv.FormatUint(uint64(user.ID), 10)
-	log.Printf("issuer: %s\n", issuer)
-	claims := jwt.NewWithClaims(jwt.SigningMethodES256, jwt.StandardClaims{
-		Issuer:    "5",
+
+	// Create the Claims
+	claims := &jwt.StandardClaims{
 		ExpiresAt: time.Now().Add(time.Hour * 24).Unix(),
-	})
+		Issuer:    strconv.Itoa(int(user.ID)),
+	}
 
-	log.Printf("claims: typeof(%T) %v\n", claims, claims)
-
-	token, err := claims.SignedString([]byte(SecretKey))
+	//mySigningKey := []byte("secret")
+	claim := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	token, err := claim.SignedString([]byte("secret"))
 	if err != nil {
 		c.Status(fiber.StatusInternalServerError)
 		return c.JSON(fiber.Map{
@@ -75,7 +83,54 @@ func Login(c *fiber.Ctx) error {
 			"message": err.Error(),
 		})
 	}
+	log.Printf("%v", token)
 
-	//return c.Status(fiber.StatusOK).JSON(token)
-	return c.JSON(token)
+	// var data map[string]string
+
+	// if err := c.BodyParser(&data); err != nil {
+	// 	c.Status(fiber.StatusBadRequest)
+	// 	return c.JSON(fiber.Map{
+	// 		"message": err.Error(),
+	// 	})
+	// }
+
+	// user := models.User{}
+	// DB := database.Connect()
+	// DB.Where("email = ?", data["email"]).First((&user))
+	// if user.ID == 0 {
+	// 	c.Status(fiber.StatusNotFound)
+	// 	return c.JSON(fiber.Map{
+	// 		//"message": "user not found",
+	// 		"message": "incorrect user or password",
+	// 	})
+	// }
+
+	// if err := bcrypt.CompareHashAndPassword(user.Password, []byte(data["password"])); err != nil {
+	// 	c.Status(fiber.StatusBadRequest)
+	// 	return c.JSON(fiber.Map{
+	// 		"message": "incorrect user or password",
+	// 	})
+	// }
+
+	// //issuer := strconv.Itoa(int(user.ID))
+	// issuer := strconv.FormatUint(uint64(user.ID), 10)
+	// claim := &jwt.StandardClaims{
+	// 	Issuer:    issuer,
+	// 	ExpiresAt: time.Now().Add(time.Hour * 24).Unix(),
+	// }
+	// claims := jwt.NewWithClaims(jwt.SigningMethodES256, claim)
+
+	// mySecret := []byte(SecretKey)
+	// token, err := claims.SignedString(mySecret)
+	// if err != nil {
+	// 	c.Status(fiber.StatusInternalServerError)
+	// 	return c.JSON(fiber.Map{
+	// 		//"message": "login failed",
+	// 		"message": err.Error(),
+	// 	})
+	// }
+
+	// //return c.Status(fiber.StatusOK).JSON(token)
+	// return c.JSON(token)
+	return c.Status(fiber.StatusOK).JSON(token)
 }
