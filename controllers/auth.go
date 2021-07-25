@@ -4,14 +4,15 @@ import (
 	"strconv"
 	"time"
 
+	"golang.org/x/crypto/bcrypt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gofiber/fiber/v2"
-	"golang.org/x/crypto/bcrypt"
+
 	"github.com/renatospaka/go-jwt/database"
 	models "github.com/renatospaka/go-jwt/models/user"
 )
 
-const SecretKey = "secret"
+const SecretKey string = "secret"
 
 // func init() {
 // 	SecretKey = []byte("secret")
@@ -34,11 +35,10 @@ func Register(c *fiber.Ctx) error {
 		Password: password,
 	}
 
-	DB := database.Connect()
-	DB.Create(&user)
+	db := database.Connect()
+	db.Create(&user)
 	return c.Status(fiber.StatusOK).JSON(user)
 }
-
 
 func Login(c *fiber.Ctx) error {
 	var data map[string]string
@@ -51,8 +51,8 @@ func Login(c *fiber.Ctx) error {
 	}
 
 	user := models.User{}
-	DB := database.Connect()
-	DB.Where("email = ?", data["email"]).First((&user))
+	db := database.Connect()
+	db.Where("email = ?", data["email"]).First(&user)
 	if user.ID == 0 {
 		c.Status(fiber.StatusNotFound)
 		return c.JSON(fiber.Map{
@@ -75,7 +75,7 @@ func Login(c *fiber.Ctx) error {
 
 	//mySigningKey := []byte("secret")
 	claim := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	token, err := claim.SignedString([]byte("secret"))
+	token, err := claim.SignedString([]byte(SecretKey))
 	if err != nil {
 		c.Status(fiber.StatusInternalServerError)
 		return c.JSON(fiber.Map{
@@ -85,14 +85,35 @@ func Login(c *fiber.Ctx) error {
 	}
 
 	cookie := fiber.Cookie{
-		Name: "jwt",
-		Value: token,
-		Expires: time.Now().Add(time.Hour * 24),
+		Name:     "jwt",
+		Value:    token,
+		Expires:  time.Now().Add(time.Hour * 24),
 		HTTPOnly: true,
 	}
 	c.Cookie(&cookie)
-	
+
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"message": "success",
 	})
+}
+
+func User(c *fiber.Ctx) error {
+	cookie := c.Cookies("jwt")
+	claim := jwt.StandardClaims{}
+	token, err := jwt.ParseWithClaims(cookie, &claim, func(token *jwt.Token) (interface{}, error) {
+		return []byte(SecretKey), nil
+	})
+	if err != nil {
+		c.Status(fiber.StatusUnauthorized)
+		return c.JSON(fiber.Map{
+			"message": "unauthenticated",
+		})
+	}
+
+	claims := token.Claims.(*jwt.StandardClaims)	
+	user := models.User{}
+	db := database.Connect()
+	db.Where("id = ?", claims.Issuer).First(&user)
+
+	return c.Status(fiber.StatusOK).JSON(user)
 }

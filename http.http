@@ -25,3 +25,7 @@ Content-Type: application/json
   "password": "2senha1",
   "email": "renato@home.org"
 }
+
+###
+GET http://localhost:8000/api/user
+Content-Type: application/json
