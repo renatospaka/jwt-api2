@@ -106,7 +106,7 @@ func User(c *fiber.Ctx) error {
 	if err != nil {
 		c.Status(fiber.StatusUnauthorized)
 		return c.JSON(fiber.Map{
-			"message": "unauthenticated",
+			"message": "not authenticated",
 		})
 	}
 
@@ -116,4 +116,19 @@ func User(c *fiber.Ctx) error {
 	db.Where("id = ?", claims.Issuer).First(&user)
 
 	return c.Status(fiber.StatusOK).JSON(user)
+}
+
+func Logout(c *fiber.Ctx) error {
+	//create an expired cookie to delete an existing one
+	cookie := fiber.Cookie{
+		Name:     "jwt",
+		Value:    "",
+		Expires:  time.Now().Add(-time.Hour * 1),
+		HTTPOnly: true,
+	}
+	c.Cookie(&cookie)
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "success",
+	})
 }

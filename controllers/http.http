@@ -29,3 +29,7 @@ Content-Type: application/json
 ###
 GET http://localhost:8000/api/user
 Content-Type: application/json
+
+###
+POST http://localhost:8000/api/logout
+Content-Type: application/json
